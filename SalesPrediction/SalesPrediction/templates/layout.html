@@ -1,0 +1,172 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{% block title %}Sales Prediction{% endblock %}</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <script src="https://cdn.jsdelivr.net/npm/alpinejs@3.x.x/dist/cdn.min.js"></script>
+    <script>
+        tailwind.config = {
+            darkMode: 'class',
+        }
+        if (localStorage.getItem('color-theme') === 'dark' || (!('color-theme' in localStorage) && window.matchMedia('(prefers-color-scheme: dark)').matches)) {
+            document.documentElement.classList.add('dark');
+        } else {
+            document.documentElement.classList.remove('dark')
+        }
+    </script>
+    <style>
+        :root {
+            --theme-color: #3b82f6; /* Default: blue-500 */
+            --theme-color-dark: #2563eb; /* Default: blue-600 */
+            --theme-color-light: #60a5fa; /* Default: blue-400 */
+            --theme-color-faint: #eff6ff; /* Default: blue-50 */
+        }
+        .dark {
+             --theme-color-faint: rgba(59, 130, 246, 0.1); /* Default: blue-900/20 */
+        }
+    </style>
+</head>
+<body class="bg-gray-100 dark:bg-gray-900 text-gray-800 dark:text-gray-200 font-sans">
+    <div class="flex h-screen">
+        <!-- Sidebar -->
+        <aside class="w-64 bg-white dark:bg-gray-800 shadow-md flex flex-col transition-colors duration-300">
+            <div class="p-6 text-2xl font-bold text-[--theme-color]">
+                ForecastFlow
+            </div>
+            <nav class="flex-1 p-4 space-y-2">
+                <a href="{{ url_for('dashboard') }}" class="flex items-center px-4 py-2 text-gray-700 dark:text-gray-300 hover:bg-gray-200 dark:hover:bg-gray-700 rounded-md">
+                    <i class="fas fa-tachometer-alt mr-3 w-5 text-center text-[--theme-color]"></i> Dashboard
+                </a>
+                <a href="{{ url_for('predict') }}" class="flex items-center px-4 py-2 text-gray-700 dark:text-gray-300 hover:bg-gray-200 dark:hover:bg-gray-700 rounded-md">
+                    <i class="fas fa-chart-line mr-3 w-5 text-center text-[--theme-color]"></i> New Prediction
+                </a>
+                <a href="{{ url_for('history') }}" class="flex items-center px-4 py-2 text-gray-700 dark:text-gray-300 hover:bg-gray-200 dark:hover:bg-gray-700 rounded-md">
+                    <i class="fas fa-history mr-3 w-5 text-center text-[--theme-color]"></i> History
+                </a>
+            </nav>
+            <div class="p-4 border-t dark:border-gray-700 space-y-2">
+                 <a href="{{ url_for('account') }}" class="flex items-center px-4 py-2 text-gray-700 dark:text-gray-300 hover:bg-gray-200 dark:hover:bg-gray-700 rounded-md">
+                     <i class="fas fa-user-circle mr-3 w-5 text-center text-[--theme-color]"></i> Account
+                </a>
+                <a href="{{ url_for('logout') }}" class="flex items-center px-4 py-2 text-gray-700 dark:text-gray-300 hover:bg-gray-200 dark:hover:bg-gray-700 rounded-md">
+                    <i class="fas fa-sign-out-alt mr-3 w-5 text-center text-[--theme-color]"></i> Logout
+                </a>
+            </div>
+        </aside>
+
+        <!-- Main Content -->
+        <main class="flex-1 flex flex-col">
+            <header class="bg-white dark:bg-gray-800 shadow-sm p-4 flex justify-between items-center transition-colors duration-300">
+                <h1 class="text-xl font-semibold text-gray-800 dark:text-gray-200">{% block header %}Dashboard{% endblock %}</h1>
+                <div class="flex items-center gap-x-4">
+                    <span class="text-gray-600 dark:text-gray-400">Welcome, {{ session.user }}</span>
+                    <div class="flex items-center gap-x-2">
+                        <button id="theme-toggle" type="button" class="text-gray-500 dark:text-gray-400 hover:bg-gray-100 dark:hover:bg-gray-700 rounded-lg text-sm p-2.5">
+                            <svg id="theme-toggle-dark-icon" class="hidden w-5 h-5" fill="currentColor" viewBox="0 0 20 20"><path d="M17.293 13.293A8 8 0 016.707 2.707a8.001 8.001 0 1010.586 10.586z"></path></svg>
+                            <svg id="theme-toggle-light-icon" class="hidden w-5 h-5" fill="currentColor" viewBox="0 0 20 20"><path d="M10 2a1 1 0 011 1v1a1 1 0 11-2 0V3a1 1 0 011-1zm4 8a4 4 0 11-8 0 4 4 0 018 0zm-.464 4.95l.707.707a1 1 0 001.414-1.414l-.707-.707a1 1 0 00-1.414 1.414zm2.121-3.536a1 1 0 010 1.414l-.707.707a1 1 0 11-1.414-1.414l.707-.707a1 1 0 011.414 0zM10 16a1 1 0 011 1v1a1 1 0 11-2 0v-1a1 1 0 011-1zM4.343 4.343a1 1 0 011.414 0l.707.707a1 1 0 01-1.414 1.414l-.707-.707a1 1 0 010-1.414zm-2.828 6.012a1 1 0 011.414 0l.707-.707a1 1 0 111.414 1.414l-.707.707a1 1 0 01-1.414 0zM17 11a1 1 0 100-2h-1a1 1 0 100 2h1z" fill-rule="evenodd" clip-rule="evenodd"></path></svg>
+                        </button>
+                        <div class="relative" x-data="{ open: false }">
+                            <button @click="open = !open" class="p-2.5 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-700">
+                                <i class="fas fa-palette text-gray-500 dark:text-gray-400"></i>
+                            </button>
+                            <div x-show="open" @click.away="open = false" class="absolute right-0 mt-2 w-32 bg-white dark:bg-gray-700 rounded-lg shadow-lg p-2 z-10" style="display: none;">
+                                <div class="grid grid-cols-4 gap-2">
+                                    <button onclick="setThemeColor('#3b82f6', '#2563eb', '#60a5fa', '#eff6ff')" class="w-6 h-6 rounded-full bg-blue-500"></button>
+                                    <button onclick="setThemeColor('#22c55e', '#16a34a', '#4ade80', '#f0fdf4')" class="w-6 h-6 rounded-full bg-green-500"></button>
+                                    <button onclick="setThemeColor('#8b5cf6', '#7c3aed', '#a78bfa', '#f5f3ff')" class="w-6 h-6 rounded-full bg-violet-500"></button>
+                                    <button onclick="setThemeColor('#ec4899', '#db2777', '#f472b6', '#fdf2f8')" class="w-6 h-6 rounded-full bg-pink-500"></button>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </header>
+
+            <div class="flex-1 p-6 overflow-y-auto">
+                 <!-- Flash Messages -->
+                {% with messages = get_flashed_messages(with_categories=true) %}
+                {% if messages %}
+                <div class="mb-4">
+                    {% for category, message in messages %}
+                    <div class="p-4 rounded-md 
+                        {% if category == 'error' %}bg-red-100 dark:bg-red-900/30 text-red-700 dark:text-red-300
+                        {% elif category == 'success' %}bg-green-100 dark:bg-green-900/30 text-green-700 dark:text-green-300
+                        {% else %}bg-[--theme-color-faint] text-[--theme-color-dark] dark:text-[--theme-color-light]
+                        {% endif %}" role="alert">
+                        {{ message }}
+                    </div>
+                    {% endfor %}
+                </div>
+                {% endif %}
+                {% endwith %}
+                {% block content %}{% endblock %}
+            </div>
+        </main>
+    </div>
+
+    <script>
+    // --- Dark/Light Mode Toggle ---
+    var themeToggleDarkIcon = document.getElementById('theme-toggle-dark-icon');
+    var themeToggleLightIcon = document.getElementById('theme-toggle-light-icon');
+    if (localStorage.getItem('color-theme') === 'dark' || (!('color-theme' in localStorage) && window.matchMedia('(prefers-color-scheme: dark)').matches)) {
+        themeToggleLightIcon.classList.remove('hidden');
+    } else {
+        themeToggleDarkIcon.classList.remove('hidden');
+    }
+    var themeToggleBtn = document.getElementById('theme-toggle');
+    themeToggleBtn.addEventListener('click', function() {
+        themeToggleDarkIcon.classList.toggle('hidden');
+        themeToggleLightIcon.classList.toggle('hidden');
+        if (localStorage.getItem('color-theme')) {
+            if (localStorage.getItem('color-theme') === 'light') {
+                document.documentElement.classList.add('dark');
+                localStorage.setItem('color-theme', 'dark');
+            } else {
+                document.documentElement.classList.remove('dark');
+                localStorage.setItem('color-theme', 'light');
+            }
+        } else {
+            if (document.documentElement.classList.contains('dark')) {
+                document.documentElement.classList.remove('dark');
+                localStorage.setItem('color-theme', 'light');
+            } else {
+                document.documentElement.classList.add('dark');
+                localStorage.setItem('color-theme', 'dark');
+            }
+        }
+    });
+
+    // --- Theme Color Switcher ---
+    function setThemeColor(color, darkColor, lightColor, faintColor) {
+        document.documentElement.style.setProperty('--theme-color', color);
+        document.documentElement.style.setProperty('--theme-color-dark', darkColor);
+        document.documentElement.style.setProperty('--theme-color-light', lightColor);
+        document.documentElement.style.setProperty('--theme-color-faint', faintColor);
+        localStorage.setItem('theme-color', color);
+        localStorage.setItem('theme-color-dark', darkColor);
+        localStorage.setItem('theme-color-light', lightColor);
+        localStorage.setItem('theme-color-faint', faintColor);
+    }
+
+    document.addEventListener('DOMContentLoaded', () => {
+        const savedColor = localStorage.getItem('theme-color');
+        const savedDarkColor = localStorage.getItem('theme-color-dark');
+        const savedLightColor = localStorage.getItem('theme-color-light');
+        const savedFaintColor = localStorage.getItem('theme-color-faint');
+        if (savedColor && savedDarkColor && savedLightColor && savedFaintColor) {
+            setThemeColor(savedColor, savedDarkColor, savedLightColor, savedFaintColor);
+        }
+    });
+    </script>
+</body>
+</html>
+
+
+
+
+
+
+

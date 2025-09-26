@@ -1,0 +1,99 @@
+{% extends "layout.html" %}
+{% block title %}Customize Prediction{% endblock %}
+{% block header %}Create New Prediction{% endblock %}
+
+{% block content %}
+<div class="max-w-2xl mx-auto">
+    <!-- MODIFIED: Back button points to the upload page -->
+    <div class="mb-4">
+        <a href="{{ url_for('predict') }}" class="text-sm text-[--theme-color] hover:underline">
+            <i class="fas fa-arrow-left mr-2"></i>Back to Upload
+        </a>
+    </div>
+
+    <div class="bg-white dark:bg-gray-800 p-8 rounded-lg shadow-lg">
+        <h2 class="text-2xl font-bold text-gray-800 dark:text-white mb-2">Step 2: Customize Parameters</h2>
+        <p class="text-gray-600 dark:text-gray-400 mb-6">
+            Fine-tune the prediction by setting the parameters below. Your data will be automatically cleaned and prepared.
+        </p>
+
+        <form id="prediction-form" action="{{ url_for('customize_prediction') }}" method="POST">
+            <div class="space-y-6">
+                <div>
+                    <label for="sales_target" class="block text-sm font-medium text-gray-900 dark:text-gray-300">What do you want to predict?</label>
+                    <select id="sales_target" name="sales_target" class="mt-2 block w-full rounded-md border-0 py-2 pl-3 pr-10 bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-200 ring-1 ring-inset ring-gray-300 dark:ring-gray-600 focus:ring-2 focus:ring-[--theme-color]">
+                        <option value="Amount">Sales Revenue (Amount)</option>
+                        <option value="Quantity">Sales Units (Quantity)</option>
+                    </select>
+                </div>
+
+                {% if items %}
+                <div>
+                    <label for="item_filter" class="block text-sm font-medium text-gray-900 dark:text-gray-300">Which ProductId to Forecast?</label>
+                    <select id="item_filter" name="item_filter" class="mt-2 block w-full rounded-md border-0 py-2 pl-3 pr-10 bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-200 ring-1 ring-inset ring-gray-300 dark:ring-gray-600 focus:ring-2 focus:ring-[--theme-color]">
+                        <option value="overall">Overall (All Products)</option>
+                        {% for item in items %}<option value="{{ item }}">{{ item }}</option>{% endfor %}
+                    </select>
+                </div>
+                {% endif %}
+
+                <div>
+                    <label for="time_frequency" class="block text-sm font-medium text-gray-900 dark:text-gray-300">Time Frequency</label>
+                    <select id="time_frequency" name="time_frequency" onchange="updateHorizonLabel()" class="mt-2 block w-full rounded-md border-0 py-2 pl-3 pr-10 bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-200 ring-1 ring-inset ring-gray-300 dark:ring-gray-600 focus:ring-2 focus:ring-[--theme-color]">
+                        <option value="W">Weekly</option>
+                        <option value="M">Monthly</option>
+                    </select>
+                </div>
+
+                <div>
+                    <label for="forecast_horizon" id="horizon-label" class="block text-sm font-medium text-gray-900 dark:text-gray-300">Forecast Horizon (in Weeks)</label>
+                    <input type="number" name="forecast_horizon" id="forecast_horizon" value="4" min="1" max="52" class="mt-2 block w-full rounded-md border-0 py-1.5 bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-200 shadow-sm ring-1 ring-inset ring-gray-300 dark:ring-gray-600 placeholder:text-gray-400 focus:ring-2 focus:ring-inset focus:ring-[--theme-color]">
+                </div>
+            </div>
+
+            <div class="mt-8 flex items-center justify-end">
+                <button type="submit" id="run-button" class="inline-flex items-center rounded-md bg-[--theme-color] px-4 py-2 text-sm font-semibold text-white shadow-sm hover:bg-[--theme-color-dark]">
+                    <span id="button-text">Run Prediction</span>
+                    <i id="loading-spinner" class="fas fa-spinner fa-spin ml-2 hidden"></i>
+                </button>
+            </div>
+        </form>
+    </div>
+</div>
+<script>
+    document.addEventListener('DOMContentLoaded', function() { updateHorizonLabel(); });
+    function updateHorizonLabel() {
+        const freqSelector = document.getElementById('time_frequency');
+        const horizonLabel = document.getElementById('horizon-label');
+        const horizonInput = document.getElementById('forecast_horizon');
+        const selectedFreq = freqSelector.value;
+        let labelText = 'Forecast Horizon (in ';
+        if (selectedFreq === 'W') {
+            labelText += 'Weeks)';
+            horizonInput.value = 4;
+        } else if (selectedFreq === 'M') {
+            labelText += 'Months)';
+            horizonInput.value = 3;
+        }
+        horizonLabel.textContent = labelText;
+    }
+
+    const form = document.getElementById('prediction-form');
+    const runButton = document.getElementById('run-button');
+    const buttonText = document.getElementById('button-text');
+    const spinner = document.getElementById('loading-spinner');
+
+    if (form) {
+        form.addEventListener('submit', function() {
+            runButton.disabled = true;
+            runButton.classList.add('opacity-50', 'cursor-not-allowed');
+            buttonText.textContent = 'Processing...';
+            spinner.classList.remove('hidden');
+        });
+    }
+</script>
+{% endblock %}
+
+
+
+

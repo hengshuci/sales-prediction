@@ -1,0 +1,65 @@
+{% extends "layout.html" %}
+{% block title %}New Prediction{% endblock %}
+{% block header %}Create New Prediction{% endblock %}
+
+{% block content %}
+<div class="max-w-2xl mx-auto">
+    <div class="bg-white dark:bg-gray-800 p-8 rounded-lg shadow-lg">
+        <h2 class="text-2xl font-bold text-gray-800 dark:text-white mb-2">Step 1: Upload Dataset</h2>
+        <p class="text-gray-600 dark:text-gray-400 mb-6">
+            Upload your historical sales data. Your file should contain columns like: <strong>Date, ProductId, and Amount</strong>.
+        </p>
+
+        <!-- MODIFIED: Form action points to the new direct route -->
+        <form action="{{ url_for('upload_and_customize') }}" method="POST" enctype="multipart/form-data">
+            <div id="drop-zone" class="flex justify-center items-center w-full">
+                <label for="file-upload" class="flex flex-col justify-center items-center w-full h-64 bg-gray-50 dark:bg-gray-700 rounded-lg border-2 border-gray-300 dark:border-gray-600 border-dashed cursor-pointer hover:bg-gray-100 dark:hover:bg-gray-600">
+                    <div class="flex flex-col justify-center items-center pt-5 pb-6">
+                        <i class="fas fa-cloud-upload-alt fa-3x text-gray-400 mb-3"></i>
+                        <p class="mb-2 text-sm text-gray-500 dark:text-gray-400"><span class="font-semibold">Click to upload</span> or drag and drop</p>
+                        <p id="file-name" class="mt-2 text-sm font-medium text-[--theme-color]"></p>
+                    </div>
+                    <input id="file-upload" name="file" type="file" class="hidden" accept=".csv, .xlsx">
+                </label>
+            </div>
+            <div class="mt-6 text-right">
+                <button type="submit" id="submit-button" disabled class="rounded-md bg-[--theme-color] px-4 py-2 text-sm font-semibold text-white shadow-sm hover:bg-[--theme-color-dark] disabled:bg-gray-400 disabled:cursor-not-allowed">
+                    Continue to Customize
+                </button>
+            </div>
+        </form>
+    </div>
+</div>
+<script>
+    const fileInput = document.getElementById('file-upload');
+    if (fileInput) {
+        const dropZone = document.getElementById('drop-zone');
+        const fileNameDisplay = document.getElementById('file-name');
+        const submitButton = document.getElementById('submit-button');
+        dropZone.addEventListener('dragover', (e) => { e.preventDefault(); dropZone.classList.add('border-[--theme-color]'); });
+        dropZone.addEventListener('dragleave', () => { dropZone.classList.remove('border-[--theme-color]'); });
+        dropZone.addEventListener('drop', (e) => {
+            e.preventDefault();
+            dropZone.classList.remove('border-[--theme-color]');
+            if (e.dataTransfer.files.length > 0) {
+                fileInput.files = e.dataTransfer.files;
+                updateFileName();
+            }
+        });
+        fileInput.addEventListener('change', updateFileName);
+        function updateFileName() {
+            if (fileInput.files.length > 0) {
+                fileNameDisplay.textContent = fileInput.files[0].name;
+                submitButton.disabled = false;
+            } else {
+                fileNameDisplay.textContent = '';
+                submitButton.disabled = true;
+            }
+        }
+    }
+</script>
+{% endblock %}
+
+
+
+

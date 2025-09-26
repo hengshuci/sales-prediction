@@ -1,0 +1,11 @@
+Flask
+werkzeug
+firebase-admin
+pandas
+xgboost
+statsmodels
+scikit-learn
+openpyxl
+weasyprint
+holidays
+pytz

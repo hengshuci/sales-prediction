@@ -1,0 +1,82 @@
+{% extends "layout.html" %}
+{% block title %}Dashboard{% endblock %}
+{% block header %}Dashboard{% endblock %}
+
+{% block content %}
+<div class="space-y-8">
+    <!-- Welcome Banner -->
+    <div class="bg-white dark:bg-gray-800 p-6 rounded-lg shadow-lg">
+        <h2 class="text-2xl font-bold text-gray-800 dark:text-white">Welcome back, {{ name }}!</h2>
+        <p class="text-gray-600 dark:text-gray-400 mt-2">Here's a quick overview of your forecasting workspace.</p>
+    </div>
+
+    <!-- Overview Stats -->
+    <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+        <!-- Total Predictions Card -->
+        <div class="bg-white dark:bg-gray-800 p-6 rounded-lg shadow-lg">
+            <div class="flex items-center">
+                <div class="p-3 rounded-full bg-blue-100 dark:bg-blue-900 text-blue-500 dark:text-blue-300">
+                    <i class="fas fa-bullseye fa-2x"></i>
+                </div>
+                <div class="ml-4">
+                    <p class="text-sm font-medium text-gray-500 dark:text-gray-400">Total Predictions</p>
+                    <p class="text-2xl font-bold text-gray-900 dark:text-white">{{ summary.total_predictions }}</p>
+                </div>
+            </div>
+        </div>
+
+        <!-- Best Model Card -->
+        <div class="bg-white dark:bg-gray-800 p-6 rounded-lg shadow-lg">
+            <div class="flex items-center">
+                <div class="p-3 rounded-full bg-green-100 dark:bg-green-900 text-green-500 dark:text-green-300">
+                    <i class="fas fa-star fa-2x"></i>
+                </div>
+                <div class="ml-4">
+                    <p class="text-sm font-medium text-gray-500 dark:text-gray-400">Best Performing Model</p>
+                    <p class="text-2xl font-bold text-gray-900 dark:text-white">{{ summary.best_model }}</p>
+                </div>
+            </div>
+        </div>
+
+        <!-- Most Forecasted Item Card -->
+        <div class="bg-white dark:bg-gray-800 p-6 rounded-lg shadow-lg">
+            <div class="flex items-center">
+                <div class="p-3 rounded-full bg-purple-100 dark:bg-purple-900 text-purple-500 dark:text-purple-300">
+                    <i class="fas fa-tag fa-2x"></i>
+                </div>
+                <div class="ml-4">
+                    <p class="text-sm font-medium text-gray-500 dark:text-gray-400">Most Forecasted Item</p>
+                    <p class="text-lg font-bold text-gray-900 dark:text-white truncate" title="{{ summary.most_forecasted_item }}">{{ summary.most_forecasted_item }}</p>
+                </div>
+            </div>
+        </div>
+
+        <!-- Last Prediction Card -->
+        <div class="bg-white dark:bg-gray-800 p-6 rounded-lg shadow-lg">
+            <div class="flex items-center">
+                <div class="p-3 rounded-full bg-yellow-100 dark:bg-yellow-900 text-yellow-500 dark:text-yellow-300">
+                    <i class="fas fa-clock fa-2x"></i>
+                </div>
+                <div class="ml-4">
+                    <p class="text-sm font-medium text-gray-500 dark:text-gray-400">Most Recent</p>
+                    <p class="text-lg font-bold text-gray-900 dark:text-white truncate" title="{{ summary.last_prediction_name }}">{{ summary.last_prediction_name }}</p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Shortcut Cards -->
+    <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+        <a href="{{ url_for('predict') }}" class="group block bg-white dark:bg-gray-800 p-6 rounded-lg shadow-lg hover:shadow-xl hover:-translate-y-1 transition-all duration-300">
+            <div class="flex items-center"><div class="p-4 rounded-full bg-blue-100 dark:bg-blue-900 text-blue-600 dark:text-blue-300 group-hover:bg-blue-600 group-hover:text-white transition-colors"><i class="fas fa-chart-line fa-2x"></i></div><div class="ml-4"><h3 class="text-lg font-semibold text-gray-900 dark:text-white">Start a New Prediction</h3><p class="text-gray-600 dark:text-gray-400 text-sm">Upload your dataset to begin.</p></div></div>
+        </a>
+        <a href="{{ url_for('history') }}" class="group block bg-white dark:bg-gray-800 p-6 rounded-lg shadow-lg hover:shadow-xl hover:-translate-y-1 transition-all duration-300">
+            <div class="flex items-center"><div class="p-4 rounded-full bg-green-100 dark:bg-green-900 text-green-600 dark:text-green-300 group-hover:bg-green-600 group-hover:text-white transition-colors"><i class="fas fa-history fa-2x"></i></div><div class="ml-4"><h3 class="text-lg font-semibold text-gray-900 dark:text-white">View Prediction History</h3><p class="text-gray-600 dark:text-gray-400 text-sm">Review your past forecasts.</p></div></div>
+        </a>
+        <a href="{{ url_for('account') }}" class="group block bg-white dark:bg-gray-800 p-6 rounded-lg shadow-lg hover:shadow-xl hover:-translate-y-1 transition-all duration-300">
+            <div class="flex items-center"><div class="p-4 rounded-full bg-purple-100 dark:bg-purple-900 text-purple-600 dark:text-purple-300 group-hover:bg-purple-600 group-hover:text-white transition-colors"><i class="fas fa-user-circle fa-2x"></i></div><div class="ml-4"><h3 class="text-lg font-semibold text-gray-900 dark:text-white">Manage Your Account</h3><p class="text-gray-600 dark:text-gray-400 text-sm">Update your profile details.</p></div></div>
+        </a>
+    </div>
+</div>
+{% endblock %}
+

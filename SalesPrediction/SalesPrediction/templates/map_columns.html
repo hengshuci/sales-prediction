@@ -1,0 +1,52 @@
+{% extends "layout.html" %}
+{% block title %}Map Columns{% endblock %}
+{% block header %}Create New Prediction{% endblock %}
+
+{% block content %}
+<div class="max-w-2xl mx-auto">
+    <!-- Back button -->
+    <div class="mb-4">
+        <a href="{{ url_for('predict') }}" class="text-sm text-[--theme-color] hover:underline">
+            <i class="fas fa-arrow-left mr-2"></i>Back to Upload
+        </a>
+    </div>
+    <div class="bg-white dark:bg-gray-800 p-8 rounded-lg shadow-lg">
+        <h2 class="text-2xl font-bold text-gray-800 dark:text-white mb-2">Step 2: Map Columns</h2>
+        <p class="text-gray-600 dark:text-gray-400 mb-6">
+            Tell us which columns are required for the prediction.
+        </p>
+
+        <form action="{{ url_for('map_columns') }}" method="POST">
+            <div class="space-y-6">
+                <!-- Required Columns -->
+                <fieldset class="border-t border-b border-gray-200 dark:border-gray-700 py-6">
+                    <legend class="text-base font-semibold text-gray-900 dark:text-white">Required Fields</legend>
+                    <div class="mt-4 space-y-4">
+                        <div>
+                            <label for="date_col" class="block text-sm font-medium leading-6 text-gray-900 dark:text-gray-300">Date Column</label>
+                            <select id="date_col" name="date_col" required class="mt-2 block w-full rounded-md border-0 py-2 pl-3 pr-10 bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-200 ring-1 ring-inset ring-gray-300 dark:ring-gray-600 focus:ring-2 focus:ring-[--theme-color]">
+                                <option value="" selected disabled>-- Select a column --</option>
+                                {% for col in columns %}<option value="{{ col }}" {% if col.lower() == 'date' %}selected{% endif %}>{{ col }}</option>{% endfor %}
+                            </select>
+                        </div>
+                        <div>
+                            <label for="sales_col" class="block text-sm font-medium leading-6 text-gray-900 dark:text-gray-300">Sales Column (Amount)</label>
+                            <select id="sales_col" name="sales_col" required class="mt-2 block w-full rounded-md border-0 py-2 pl-3 pr-10 bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-200 ring-1 ring-inset ring-gray-300 dark:ring-gray-600 focus:ring-2 focus:ring-[--theme-color]">
+                                <option value="" selected disabled>-- Select a column --</option>
+                                {% for col in columns %}<option value="{{ col }}" {% if col.lower() == 'amount' %}selected{% endif %}>{{ col }}</option>{% endfor %}
+                            </select>
+                        </div>
+                    </div>
+                </fieldset>
+            </div>
+
+            <div class="mt-8 flex items-center justify-end">
+                <button type="submit" class="rounded-md bg-[--theme-color] px-4 py-2 text-sm font-semibold text-white shadow-sm hover:bg-[--theme-color-dark]">
+                    Continue to Data Check
+                </button>
+            </div>
+        </form>
+    </div>
+</div>
+{% endblock %}
+

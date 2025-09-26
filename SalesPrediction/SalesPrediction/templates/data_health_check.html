@@ -1,0 +1,112 @@
+{% extends "layout.html" %}
+{% block title %}Data Health Check{% endblock %}
+{% block header %}Create New Prediction{% endblock %}
+
+{% block content %}
+<div class="max-w-4xl mx-auto">
+    <!-- Back button -->
+    <div class="mb-4">
+        <a href="{{ url_for('customize_prediction') }}" class="text-sm text-[--theme-color] hover:underline">
+            <i class="fas fa-arrow-left mr-2"></i>Back to Customize
+        </a>
+    </div>
+
+    <div class="bg-white dark:bg-gray-800 p-8 rounded-lg shadow-lg">
+        <h2 class="text-2xl font-bold text-gray-800 dark:text-white mb-2">Step 3: Data Health Check</h2>
+        <p class="text-gray-600 dark:text-gray-400 mb-6">
+            This is the final, cleaned data for <strong>"{{ params.item_filtered }}"</strong> that will be used for forecasting.
+        </p>
+
+        <!-- Data Profile Cards -->
+        <div class="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
+            <div class="bg-gray-50 dark:bg-gray-700 p-4 rounded-lg text-center">
+                <p class="text-sm font-medium text-gray-500 dark:text-gray-400">Time Period Covered</p>
+                <p class="text-xl font-bold text-gray-900 dark:text-white">{{ profile.start_date }} to {{ profile.end_date }}</p>
+            </div>
+            <div class="bg-gray-50 dark:bg-gray-700 p-4 rounded-lg text-center">
+                <p class="text-sm font-medium text-gray-500 dark:text-gray-400">Total Periods ({{ params.time_frequency | replace('W', 'Weeks') | replace('M', 'Months') }})</p>
+                <p class="text-xl font-bold text-gray-900 dark:text-white">{{ profile.total_periods }}</p>
+            </div>
+            <div class="bg-yellow-50 dark:bg-yellow-900/30 p-4 rounded-lg text-center">
+                <p class="text-sm font-medium text-yellow-800 dark:text-yellow-300">Periods with Zero Sales</p>
+                <p class="text-xl font-bold text-yellow-900 dark:text-yellow-200">{{ profile.zero_sales_periods }}</p>
+            </div>
+        </div>
+
+        <!-- Data Visualization -->
+        <div>
+            <h3 class="text-lg font-semibold text-gray-700 dark:text-gray-200 mb-4">Final Sales Trend</h3>
+            <div class="bg-gray-50 dark:bg-gray-900/50 p-4 rounded-lg">
+                <canvas id="profileChart" style="height: 300px;"></canvas>
+            </div>
+        </div>
+
+        <form action="{{ url_for('run_prediction') }}" method="POST">
+            <!-- NEW: Outlier Removal Option -->
+            <div class="mt-6 rounded-md bg-orange-50 dark:bg-orange-900/30 p-4">
+              <div class="flex">
+                <div class="flex-shrink-0">
+                  <i class="fas fa-exclamation-triangle text-orange-400"></i>
+                </div>
+                <div class="ml-3">
+                  <h3 class="text-sm font-medium text-orange-800 dark:text-orange-300">Improve Accuracy?</h3>
+                  <div class="mt-2 text-sm text-orange-700 dark:text-orange-200">
+                    <p>Your data may contain extreme outliers (sudden, massive sales spikes) that can make the forecast less accurate. Check the box below to automatically remove them.</p>
+                  </div>
+                  <div class="mt-4">
+                      <label class="inline-flex items-center">
+                          <input type="checkbox" name="remove_outliers" class="h-4 w-4 rounded border-gray-300 text-[--theme-color] focus:ring-[--theme-color]">
+                          <span class="ml-2 text-sm text-gray-700 dark:text-gray-300">Remove outliers for better accuracy</span>
+                      </label>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <div class="mt-8 flex items-center justify-end">
+                <button type="submit" class="inline-flex items-center rounded-md bg-[--theme-color] px-4 py-2 text-sm font-semibold text-white shadow-sm hover:bg-[--theme-color-dark]">
+                    Looks Good, Run Prediction
+                </button>
+            </div>
+        </form>
+    </div>
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/chartjs-adapter-date-fns/dist/chartjs-adapter-date-fns.bundle.min.js"></script>
+<script>
+    const plotData = {{ plot_data | tojson }};
+    const timeFrequency = {{ params.time_frequency | tojson }};
+    const isDarkMode = document.documentElement.classList.contains('dark');
+
+    Chart.defaults.borderColor = isDarkMode ? 'rgba(255, 255, 255, 0.1)' : 'rgba(0, 0, 0, 0.1)';
+    Chart.defaults.color = isDarkMode ? '#cbd5e1' : '#6b7280';
+
+    window.addEventListener('load', () => {
+        const ctx = document.getElementById('profileChart').getContext('2d');
+        const themeColor = getComputedStyle(document.documentElement).getPropertyValue('--theme-color').trim();
+        new Chart(ctx, {
+            type: 'bar',
+            data: {
+                labels: plotData.dates,
+                datasets: [{
+                    label: 'Sales per Period',
+                    data: plotData.sales,
+                    backgroundColor: `${themeColor}B3`,
+                    borderColor: themeColor,
+                    borderWidth: 1
+                }]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                scales: {
+                    x: { type: 'time', time: { unit: timeFrequency === 'W' ? 'week' : 'month' } },
+                    y: { title: { display: true, text: 'Total Sales' }, beginAtZero: true }
+                }
+            }
+        });
+    });
+</script>
+{% endblock %}
+
